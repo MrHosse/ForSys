@@ -4,6 +4,7 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class MyPathwidthSolver extends PathwidthSolver {
     public MyPathwidthSolver(Graph g){
@@ -12,8 +13,10 @@ public class MyPathwidthSolver extends PathwidthSolver {
 
     @Override
     public Solution solve() {
-
-        
+        Iterator<GraphEdge> edgIterator = graph.getEdgeIterator();
+        GraphEdge e = edgIterator.next();
+        System.out.println(e.getEndpoint1());
+        /* 
         try{
             solver.addClause(new VecInt(new int[]{-1,2}));
             solver.addClause(new VecInt(new int[]{1,-3,-2}));
@@ -21,6 +24,7 @@ public class MyPathwidthSolver extends PathwidthSolver {
         } catch (Exception e) {
             System.out.println("LOL");
         }
+        */
         // TODO: Implement solution
         solution.setState(SolutionState.UNKNOWN);
         return solution;

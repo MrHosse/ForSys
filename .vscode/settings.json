@@ -1,0 +1,7 @@
+{
+    "makefile.configureOnOpen": false,
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "pathwidth-1.0-all.jar"
+    ]
+}
