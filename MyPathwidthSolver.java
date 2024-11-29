@@ -34,6 +34,17 @@ public class MyPathwidthSolver extends PathwidthSolver {
             }
         }
 
+        // at least 1 number in every interval
+        IntStream.range(0, n)
+            .mapToObj(node -> new VecInt(IntStream.range(0, n).map(i -> getLiteralC(n, node, i)).toArray()))
+            .forEach(vec -> {
+                try {
+                    solver.addAtLeast(vec, 1);
+                } catch (ContradictionException e) {
+                    System.err.println("Adding C at least 1 clauses: " + e.getMessage());
+                }
+            });
+
         // adding interval clauses
         for (int node = 0; node < n; node++) {
             for (int i = 0; i < n; i++) {
@@ -60,8 +71,7 @@ public class MyPathwidthSolver extends PathwidthSolver {
                     System.err.println("Adding pathwidth clauses: " + e.getMessage());
                 }
             });
-
-
+        
         // adding edge clauses
         Iterator<GraphEdge> edgIterator = graph.getEdgeIterator();
         for (int edgeNum = 0; edgeNum < graph.getNumEdges(); edgeNum++){
@@ -69,21 +79,29 @@ public class MyPathwidthSolver extends PathwidthSolver {
             int u = edge.getEndpoint1();
             int v = edge.getEndpoint2();
             
-            
+            try {
+                solver.addClause(new VecInt(new int[]{-getLiteralA(n, u, 0), -getLiteralA(n, v, 0), getLiteralB(n, u, 0), getLiteralB(n, v, 0)}));
+            } catch (Exception e) {
+                System.err.println("Adding 0 edge clauses: " + e.getMessage());
+            }
+
+            for (int i = 0; i < n - 1; i++) {
+                try {
+                    solver.addClause(new VecInt(new int[]{-getLiteralA(n, u, i + 1), -getLiteralA(n, v, i + 1), getLiteralA(n, u, i), getLiteralA(n, v, i), getLiteralB(n, u, i + 1), getLiteralB(n, v, i + 1)}));
+                } catch (Exception e) {
+                    System.err.println("Adding edge clauses for " + i + ": " + e.getMessage());
+                }
+            }
         }
 
-        GraphEdge e = edgIterator.next();
-        System.out.println(e.getEndpoint1());
-        /* 
-        try{
-            solver.addClause(new VecInt(new int[]{-1,2}));
-            solver.addClause(new VecInt(new int[]{1,-3,-2}));
-            Arrays.stream(solver.findModel()).forEach(System.out::println);
+        try {
+            if (solver.isSatisfiable()) System.out.println("sat");
+            else System.out.println("unsat");
         } catch (Exception e) {
-            System.out.println("LOL");
+            System.out.println(e.getMessage());
         }
-        */
-        // TODO: Implement solution
+        
+        
         solution.setState(SolutionState.UNKNOWN);
         return solution;
     }
