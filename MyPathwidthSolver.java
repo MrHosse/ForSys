@@ -6,6 +6,7 @@ import org.sat4j.specs.TimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class MyPathwidthSolver extends PathwidthSolver {
@@ -53,8 +54,8 @@ public class MyPathwidthSolver extends PathwidthSolver {
 
                 try {
                     solver.addClause(new VecInt(new int[]{ani, bni}));
-                    if (i > 0) solver.addClause(new VecInt(new int[]{ani, getLiteralA(n, node, i - 1)}));
-                    if (i < n - 1) solver.addClause(new VecInt(new int[]{bni, getLiteralB(n, node, i + 1)}));
+                    if (i > 0) solver.addClause(new VecInt(new int[]{ani, -getLiteralA(n, node, i - 1)}));
+                    if (i < n - 1) solver.addClause(new VecInt(new int[]{bni, -getLiteralB(n, node, i + 1)}));
                 } catch (Exception e) {
                     System.err.println("Interval clause for " + node + " " + i + ": " + e.getMessage());
                 }
@@ -79,15 +80,10 @@ public class MyPathwidthSolver extends PathwidthSolver {
             int u = edge.getEndpoint1();
             int v = edge.getEndpoint2();
             
-            try {
-                solver.addClause(new VecInt(new int[]{-getLiteralA(n, u, 0), -getLiteralA(n, v, 0), getLiteralB(n, u, 0), getLiteralB(n, v, 0)}));
-            } catch (Exception e) {
-                System.err.println("Adding 0 edge clauses: " + e.getMessage());
-            }
-
             for (int i = 0; i < n - 1; i++) {
                 try {
-                    solver.addClause(new VecInt(new int[]{-getLiteralA(n, u, i + 1), -getLiteralA(n, v, i + 1), getLiteralA(n, u, i), getLiteralA(n, v, i), getLiteralB(n, u, i + 1), getLiteralB(n, v, i + 1)}));
+                    solver.addClause(new VecInt(new int[]{getLiteralA(n, u, i), getLiteralB(n, v, i + 1)}));
+                    solver.addClause(new VecInt(new int[]{getLiteralA(n, v, i), getLiteralB(n, u, i + 1)}));
                 } catch (Exception e) {
                     System.err.println("Adding edge clauses for " + i + ": " + e.getMessage());
                 }
@@ -95,8 +91,16 @@ public class MyPathwidthSolver extends PathwidthSolver {
         }
 
         try {
-            if (solver.isSatisfiable()) System.out.println("sat");
-            else System.out.println("unsat");
+            System.out.println(solver.isSatisfiable());
+            int[] so = solver.findModel();
+            for (int i = 0; i < so.length; i++) {
+                if (i % n == 0) System.out.print("\n");
+                if (i % (3*n) == 0) System.out.print("A: ");
+                if (i % (3*n) == n) System.out.print("B: ");
+                if (i % (3*n) == 2*n) System.out.print("C: ");
+                System.out.print(so[i] + " ");
+                
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -117,4 +121,5 @@ public class MyPathwidthSolver extends PathwidthSolver {
     private int getLiteralC(int n, int node, int i){
         return (3 * n * node + 2 * n + i + 1);
     }
+
 }
