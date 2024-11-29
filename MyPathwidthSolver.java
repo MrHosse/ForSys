@@ -3,10 +3,7 @@ import org.sat4j.core.VecInt;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.stream.IntStream;
 
 public class MyPathwidthSolver extends PathwidthSolver {
@@ -91,22 +88,29 @@ public class MyPathwidthSolver extends PathwidthSolver {
         }
 
         try {
-            System.out.println(solver.isSatisfiable());
-            int[] so = solver.findModel();
-            for (int i = 0; i < so.length; i++) {
-                if (i % n == 0) System.out.print("\n");
-                if (i % (3*n) == 0) System.out.print("A: ");
-                if (i % (3*n) == n) System.out.print("B: ");
-                if (i % (3*n) == 2*n) System.out.print("C: ");
-                System.out.print(so[i] + " ");
-                
+            if (solver.isSatisfiable()) {
+                int[] model = solver.findModel();
+                for (int node = 0; node < n; node++) {
+                    int start = 3 * n * node + 2 * n;
+                    int end = start + n - 1;
+                    int firstPositive = -1, lastPositive = -1;
+                    for (int j = start; j <= end; j++) {
+                        if (model[j] > 0) {
+                            if (firstPositive == -1) firstPositive = j;
+                            lastPositive = j;
+                        }
+                    }
+                    solution.setInterval(node, firstPositive - start + 1, lastPositive - start + 1.5f);
+                }
+
+                solution.setState(SolutionState.SAT);
+            } else {
+                solution.setState(SolutionState.UNSAT);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         
-        
-        solution.setState(SolutionState.UNKNOWN);
         return solution;
     }
 
